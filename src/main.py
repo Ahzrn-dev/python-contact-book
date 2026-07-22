@@ -1,73 +1,88 @@
+from typing import TypedDict
+
+
+class Contact(TypedDict):
+    phone: str
+    email: str
+    address: str
+
+
 class ContactBook:
-    """
-    A class used to represent a Contact Book.
-    """
-    def __init__(self):
-        """
-        Initialize contact book object with an empty dictionary.
-        """
-        self.contacts: dict = {}
+    """Manage contacts stored in memory."""
 
-    def add_contact(self, name: str, phone: str, email: str, address: str):
-        """
-        Adds a new contact to the contact book.
+    def __init__(self) -> None:
+        self.contacts: dict[str, Contact] = {}
 
-        :param str name: The name of the contact
-        :param str phone: The phone number of the contact
-        :param str email: The email address of the contact
-        :param str address: The physical address of the contact
-        """
-        if name not in self.contacts:
-            self.contacts[name] = {'phone': phone, 'email': email, 'address': address}
-            print("Contact added successfully!")
-        else:
-            print("Contact already exists.")
+    def add_contact(
+        self,
+        name: str,
+        phone: str,
+        email: str,
+        address: str,
+    ) -> bool:
+        """Add a new contact if the name does not already exist."""
 
-    def view_contacts(self):
-        """
-        Displays all contacts in the contact book.
-        """
-        for name, info in self.contacts.items():
-            print("Name:", name)
-            print("Phone:", info['phone'])
-            print("Email:", info['email'])
-            print("Address:", info['address'])
-            print("-----------------------")
-
-    def delete_contact(self, name: str):
-        """
-        Deletes a contact from the contact book.
-
-        :param str name: The name of the contact to delete
-        """
         if name in self.contacts:
-            del self.contacts[name]
-            print("Contact deleted successfully!")
-        else:
-            print("Contact not found")
+            return False
 
-    def edit_contact(self, name: str, phone: str = None, email: str = None, address: str = None):
-        """
-        Edits an existing contact in the contact book.
+        self.contacts[name] = {
+            "phone": phone,
+            "email": email,
+            "address": address,
+        }
 
-        :param str name: The name of the contact to edit
-        :param str phone: The new phone number of the contact
-        :param str email: The new email address of the contact
-        :param str address: The new physical address of the contact
-        """
-        if name in self.contacts:
-            if phone:
-                self.contacts[name]['phone'] = phone
-            if email:
-                self.contacts[name]['email'] = email
-            if address:
-                self.contacts[name]['address'] = address
-            print("Contact updated successfully!")
+        return True
+
+    def view_contacts(self) -> None:
+        """Display all saved contacts."""
+
+        if not self.contacts:
+            print("No contacts found.")
             return
-        print("Contact not found")
+
+        for name, info in self.contacts.items():
+            print(f"\nName: {name}")
+            print(f"Phone: {info['phone']}")
+            print(f"Email: {info['email']}")
+            print(f"Address: {info['address']}")
+            print("-" * 24)
+
+    def delete_contact(self, name: str) -> bool:
+        """Delete a contact by name."""
+
+        if name not in self.contacts:
+            return False
+
+        del self.contacts[name]
+        return True
+
+    def edit_contact(
+        self,
+        name: str,
+        phone: str | None = None,
+        email: str | None = None,
+        address: str | None = None,
+    ) -> bool:
+        """Update an existing contact."""
+
+        if name not in self.contacts:
+            return False
+
+        if phone is not None:
+            self.contacts[name]["phone"] = phone
+
+        if email is not None:
+            self.contacts[name]["email"] = email
+
+        if address is not None:
+            self.contacts[name]["address"] = address
+
+        return True
 
 
-if __name__ == "__main__":
+def main() -> None:
+    """Run the Contact Book command-line application."""
+
     book = ContactBook()
 
     while True:
@@ -77,33 +92,62 @@ if __name__ == "__main__":
         print("3. View contacts")
         print("4. Delete contact")
         print("5. Quit")
-        user_choice = input("\nPlease choose an option: ")
 
-        if user_choice == '1':
-            name = input("\nEnter Contact name: ")
-            phone = input("Enter Contact phone: ")
-            email = input("Enter Contact email: ")
-            address = input("Enter Contact address: ")
-            book.add_contact(name, phone, email, address)
+        user_choice = input("\nPlease choose an option: ").strip()
 
-        elif user_choice == '2':
-            name = input("\nEnter name of the contact to edit: ")
-            phone = input("Enter new/updated phone number or press Enter to keep unchanged: ")
-            email = input("Enter new/updated email or press Enter to keep unchanged: ")
-            address = input("Enter new/updated address or press Enter to keep unchanged: ")
-            book.edit_contact(name, phone or None, email or None, address or None)
+        if user_choice == "1":
+            name = input("Enter contact name: ").strip()
+            phone = input("Enter contact phone: ").strip()
+            email = input("Enter contact email: ").strip()
+            address = input("Enter contact address: ").strip()
 
-        elif user_choice == '3':
-            print("\nList of Contacts:")
+            if book.add_contact(name, phone, email, address):
+                print("Contact added successfully.")
+            else:
+                print("Contact already exists.")
+
+        elif user_choice == "2":
+            name = input("Enter the contact name to edit: ").strip()
+            phone = input(
+                "Enter a new phone number or press Enter to keep unchanged: "
+            ).strip()
+            email = input(
+                "Enter a new email or press Enter to keep unchanged: "
+            ).strip()
+            address = input(
+                "Enter a new address or press Enter to keep unchanged: "
+            ).strip()
+
+            updated = book.edit_contact(
+                name,
+                phone or None,
+                email or None,
+                address or None,
+            )
+
+            if updated:
+                print("Contact updated successfully.")
+            else:
+                print("Contact not found.")
+
+        elif user_choice == "3":
             book.view_contacts()
 
-        elif user_choice == '4':
-            name = input("\nEnter name of contact to delete: ")
-            book.delete_contact(name)
+        elif user_choice == "4":
+            name = input("Enter the contact name to delete: ").strip()
 
-        elif user_choice == '5':
-            print("\nThank You for using Contact Book Application. Goodbye!")
+            if book.delete_contact(name):
+                print("Contact deleted successfully.")
+            else:
+                print("Contact not found.")
+
+        elif user_choice == "5":
+            print("Goodbye!")
             break
 
         else:
-            print("\nInvalid choice! Please try again.")
+            print("Invalid choice. Please try again.")
+
+
+if __name__ == "__main__":
+    main()
